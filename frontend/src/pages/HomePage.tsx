@@ -283,9 +283,13 @@ export const HomePage: React.FC = () => {
                             {log.involverte_muskler.map((muskel, idx) => (
                               <span
                                 key={idx}
-                                className="px-2 py-0.5 bg-gray-200 text-gray-700 text-xs rounded"
+                                className={`px-2 py-1 text-xs rounded-full ${
+                                  muskel.muskel_type === 'primar'
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-blue-100 text-blue-800'
+                                }`}
                               >
-                                {muskel}
+                                {muskel.muskel_navn}
                               </span>
                             ))}
                           </div>

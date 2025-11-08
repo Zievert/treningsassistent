@@ -64,7 +64,7 @@ export const StatisticsPage: React.FC = () => {
 
     recentHistory.forEach((log) => {
       log.involverte_muskler?.forEach((muskel) => {
-        muscleCount[muskel] = (muscleCount[muskel] || 0) + 1;
+        muscleCount[muskel.muskel_navn] = (muscleCount[muskel.muskel_navn] || 0) + 1;
       });
     });
 
