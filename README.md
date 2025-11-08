@@ -28,12 +28,18 @@ Systemet opererer som en **kontinuerlig treningsflyt** - ingen "økter" med star
 - **Authentication:** JWT with bcrypt password hashing
 - **Data Source:** 873 exercises from [free-exercise-db](https://github.com/yuhonas/free-exercise-db)
 
-### Frontend (📝 Planlagt)
+### Frontend (✅ Ferdig)
 
-- **Framework:** React
-- **Visualisering:** Plotly.js (heatmaps, grafer)
-- **HTTP Client:** Axios
-- **State Management:** React Context / Redux
+- **Framework:** React 18 + TypeScript
+- **Build Tool:** Vite 7
+- **Styling:** Tailwind CSS v3
+- **Routing:** React Router v6
+- **HTTP Client:** Axios with JWT interceptors
+- **State Management:** React Context API
+- **Visualisering:** Plotly.js (line charts, bar charts, grouped charts)
+- **Form Validation:** React Hook Form + Zod
+- **Notifications:** Custom Toast system
+- **Animations:** CSS keyframes + Tailwind animations
 
 ### Deployment (📝 Planlagt)
 
@@ -61,6 +67,25 @@ Systemet opererer som en **kontinuerlig treningsflyt** - ingen "økter" med star
 │   ├── manage.py              # CLI for admin/invitations
 │   ├── test_workflow.py       # Integration test
 │   └── requirements.txt
+├── frontend/                   # React frontend (✅ Ferdig)
+│   ├── src/
+│   │   ├── components/        # Reusable components
+│   │   │   ├── common/        # Button, Input, Card, Alert, Skeleton, Confetti
+│   │   │   ├── features/      # ExerciseCard, ExerciseLoggingForm
+│   │   │   └── layout/        # Navbar, MainLayout, ProtectedRoute
+│   │   ├── context/           # AuthContext, ToastContext
+│   │   ├── hooks/             # useKeyboardShortcut
+│   │   ├── pages/             # 7 pages (Login, Register, Home, History, Statistics, Equipment, Admin)
+│   │   ├── services/          # API clients (auth, exercise, history, statistics, equipment, admin)
+│   │   ├── types/             # TypeScript type definitions
+│   │   ├── utils/             # Storage utilities
+│   │   ├── App.tsx            # Main app component
+│   │   ├── main.tsx           # Entry point
+│   │   └── index.css          # Global styles + animations
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── vite.config.ts
+│   └── tailwind.config.js
 ├── exercise_images/           # 873 exercises, 1746 images
 ├── exercises.json             # Exercise database (free-exercise-db)
 ├── referansedok.md           # Complete project specification
@@ -110,7 +135,22 @@ API vil være tilgjengelig på:
 - **Interactive Docs:** http://localhost:8000/docs
 - **ReDoc:** http://localhost:8000/redoc
 
-### 4. Test Accounts
+### 4. Frontend Setup
+
+```bash
+cd frontend
+
+# Installer dependencies (allerede gjort)
+npm install
+
+# Start development server
+npm run dev
+```
+
+Frontend vil være tilgjengelig på:
+- **App:** http://localhost:5173
+
+### 5. Test Accounts
 
 **Admin Account:**
 - Username: `admin`
@@ -119,6 +159,39 @@ API vil være tilgjengelig på:
 **Regular User:**
 - Username: `testuser`
 - Password: `password123`
+
+## Frontend Features
+
+### Sider (7 totalt)
+
+1. **Login Page** - JWT authentication med form validation
+2. **Register Page** - Invite-only registrering med invitation code
+3. **Home Page** - AI-drevet øvelsesanbefaling + loggføring + nylig aktivitet
+4. **History Page** - Treningshistorikk gruppert per dato med volumberegninger
+5. **Statistics Page** - Plotly-visualiseringer:
+   - Volum over tid (line chart)
+   - Mest trente muskelgrupper (horizontal bar chart)
+   - Antagonistisk muskelbalanse (grouped bar chart)
+   - Personlige rekorder
+   - Treningstrender
+6. **Equipment Page** - CRUD for utstyrsprofiler med kategori-basert velger
+7. **Admin Page** (admin-only) - Invitasjonshåndtering, brukerhåndtering, systemstatistikk
+
+### UI/UX Features
+
+- **Toast Notifications** - Auto-dismissing toasts med 4 typer (success, error, warning, info)
+- **Skeleton Loading** - Smooth loading states med pulse animasjon
+- **Confetti Celebration** - Feiring når øvelser logges
+- **Smooth Animations** - Slide-in, fade-in, scale-in animasjoner
+- **Responsive Design** - Mobil-vennlig med hamburger-meny
+- **Protected Routes** - Automatisk redirect til login
+- **Admin-only Routes** - 403 error page for ikke-administratorer
+
+### Komponenter
+
+- **Common**: Button, Input, Card, Alert, Skeleton, Confetti
+- **Features**: ExerciseCard, ExerciseLoggingForm
+- **Layout**: Navbar, MainLayout, ProtectedRoute
 
 ## Kjernefunksjonalitet
 
@@ -194,12 +267,20 @@ Algoritmen kombinerer flere faktorer for å foreslå optimal neste øvelse:
 ### Equipment (Utstyr)
 - `GET /api/utstyr/alle` - Get all equipment types
 - `GET /api/utstyr/profiler` - Get user's equipment profiles
+- `GET /api/utstyr/profiler/aktiv` - Get active equipment profile
 - `POST /api/utstyr/profiler` - Create equipment profile
-- `PUT /api/utstyr/profiler/{profil_id}/aktivere` - Activate profile
+- `PUT /api/utstyr/profiler/{profil_id}` - Update equipment profile
+- `POST /api/utstyr/profiler/{profil_id}/aktivere` - Activate profile
+- `DELETE /api/utstyr/profiler/{profil_id}` - Delete profile
 
 ### Admin (Admin-only)
 - `POST /api/admin/invitasjoner` - Create invitation code
+- `GET /api/admin/invitasjoner` - List all invitations
+- `DELETE /api/admin/invitasjoner/{invitasjon_id}` - Delete invitation
 - `GET /api/admin/brukere` - List all users
+- `POST /api/admin/brukere/{bruker_id}/aktiver` - Activate user
+- `POST /api/admin/brukere/{bruker_id}/deaktiver` - Deactivate user
+- `POST /api/admin/brukere/{bruker_id}/gjor-admin` - Make user admin
 - `GET /api/admin/stats` - System statistics
 
 ## Database Schema
@@ -275,21 +356,33 @@ Se `.mcp.json` for konfigurasjon.
 
 ## Utviklingsstatus
 
-### ✅ Ferdig (Backend 100%)
-- Database setup og migrations
-- Alle 873 øvelser importert med bilder
-- Complete API implementation (40+ endpoints)
-- Authentication system (JWT + invite-only)
-- AI recommendation algorithm
-- Statistics and tracking
-- Management CLI
-- Workflow testing
+### ✅ Ferdig (100% Complete)
 
-### 📝 Neste steg
-- **Frontend Development:** React web app
+**Backend:**
+- ✅ Database setup og migrations
+- ✅ Alle 873 øvelser importert med bilder
+- ✅ Complete API implementation (40+ endpoints)
+- ✅ Authentication system (JWT + invite-only)
+- ✅ AI recommendation algorithm
+- ✅ Statistics and tracking
+- ✅ Management CLI
+- ✅ Workflow testing
+
+**Frontend:**
+- ✅ React 18 + TypeScript + Vite setup
+- ✅ Authentication (Login/Register med JWT)
+- ✅ Hovedfunksjonalitet (Øvelsesanbefaling, Logging, Historikk)
+- ✅ Statistikk & Visualisering (Plotly-grafer, Personlige rekorder)
+- ✅ Utstyrshåndtering (CRUD for profiler)
+- ✅ Admin-panel (Invitasjoner, Brukerhåndtering, Statistikk)
+- ✅ UX-forbedringer (Toast, Skeletons, Animasjoner, Confetti)
+
+### 📝 Neste steg (Valgfritt)
 - **Mobile App:** React Native / Flutter
-- **Testing:** Unit tests med pytest
-- **Deployment:** Docker/Docker Compose setup
+- **Unit Testing:** Jest + React Testing Library
+- **E2E Testing:** Playwright / Cypress
+- **Docker:** Docker Compose setup
+- **Deployment:** Production deployment guide
 - **Enhancements:** Email for invitations, password reset
 
 ## Datakilde
@@ -306,8 +399,10 @@ Se `.mcp.json` for konfigurasjon.
 - ✅ Bcrypt password hashing (cost factor 12)
 - ✅ Invite-only registration
 - ✅ SQL injection protection (SQLAlchemy ORM)
-- ✅ Input validation (Pydantic schemas)
+- ✅ Input validation (Pydantic schemas + React Hook Form)
 - ✅ User isolation (all queries filter by user_id)
+- ✅ Protected routes (client-side + server-side validation)
+- ✅ Admin-only routes (role-based access control)
 - 📝 HTTPS (Let's Encrypt) - for deployment
 - 📝 Rate limiting - planned
 
