@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/layout';
-import { LoginPage, RegisterPage, HomePage, HistoryPage, StatisticsPage, EquipmentPage } from './pages';
+import { LoginPage, RegisterPage, HomePage, HistoryPage, StatisticsPage, EquipmentPage, AdminPage } from './pages';
 
 function App() {
   return (
@@ -42,6 +42,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <EquipmentPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminPage />
               </ProtectedRoute>
             }
           />
