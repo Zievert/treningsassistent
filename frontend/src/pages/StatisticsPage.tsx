@@ -220,8 +220,8 @@ export const StatisticsPage: React.FC = () => {
                   layout={{
                     autosize: true,
                     margin: { l: 50, r: 30, t: 30, b: 50 },
-                    xaxis: { title: 'Periode' },
-                    yaxis: { title: 'Total volum (kg)' },
+                    xaxis: { title: { text: 'Periode' } },
+                    yaxis: { title: { text: 'Total volum (kg)' } },
                     hovermode: 'closest',
                     plot_bgcolor: '#f9fafb',
                     paper_bgcolor: 'white',
@@ -247,8 +247,8 @@ export const StatisticsPage: React.FC = () => {
                   layout={{
                     autosize: true,
                     margin: { l: 150, r: 30, t: 30, b: 50 },
-                    xaxis: { title: 'Antall økter' },
-                    yaxis: { title: '' },
+                    xaxis: { title: { text: 'Antall økter' } },
+                    yaxis: { title: { text: '' } },
                     plot_bgcolor: '#f9fafb',
                     paper_bgcolor: 'white',
                   }}
@@ -278,8 +278,8 @@ export const StatisticsPage: React.FC = () => {
                     autosize: true,
                     barmode: 'group',
                     margin: { l: 50, r: 30, t: 30, b: 100 },
-                    xaxis: { title: 'Antagonistisk par', tickangle: -45 },
-                    yaxis: { title: 'Antall økter' },
+                    xaxis: { title: { text: 'Antagonistisk par' }, tickangle: -45 },
+                    yaxis: { title: { text: 'Antall økter' } },
                     plot_bgcolor: '#f9fafb',
                     paper_bgcolor: 'white',
                     showlegend: false,
