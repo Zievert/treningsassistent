@@ -1,11 +1,42 @@
 # Claude Development Context
 
+## 📖 Quick Start Guider
+
+**Hvis du er ny i dette prosjektet, start her:**
+- 📄 **QUICK_START.md** - 1-side oversikt for rask oppstart
+- 📚 **CLAUDE_CODE_ONBOARDING.md** - Komplett onboarding guide (10+ sider)
+
+Disse guidene gir deg alt du trenger for å komme i gang raskt!
+
+---
+
 ## Utviklingsmiljø
 
 **Platform:** Windows Subsystem for Linux 2 (WSL2)
 - **Kernel:** Linux 6.6.87.2-microsoft-standard-WSL2
-- **Distribusjon:** Ubuntu (antagelig)
-- **Working Directory:** `/home/silver/prosjekter/trening`
+- **Distribusjon:** Ubuntu 22.04 LTS
+- **Working Directory:** `/home/silver/mounts/server` ⚠️ **SSHFS MOUNT**
+
+### ⚠️ VIKTIG: SSHFS Mount-miljø
+**Du jobber DIREKTE på produksjonsserveren via sshfs!**
+
+- **Lokal path:** `/home/silver/mounts/server`
+- **Remote path:** `gull:/home/sivert/treningsassistent` (10.0.0.20)
+- **Mount type:** sshfs (SSH Filesystem)
+- **Alle file-endringer skjer LIVE på produksjonsserveren**
+- **Ingen deploy nødvendig** - endringer er instant!
+
+**Hvordan dette fungerer:**
+```
+WSL (lokal maskin)                    gull (produksjonsserver)
+~/mounts/server/  ←─ sshfs ─→  /home/sivert/treningsassistent
+(du er her)                           (faktisk lokasjon)
+```
+
+**Auto-mount ved oppstart:**
+- Script: `~/scripts/mount-server.sh`
+- Kjører automatisk via `~/.bashrc`
+- Sjekk status: `mountpoint ~/mounts/server`
 
 ## Produksjonsserver
 
@@ -20,7 +51,8 @@
 - ✅ **Python:** 3.12.3
 - ✅ **Node.js:** v22.21.0
 - ✅ **Docker:** 28.5.1
-- ❌ **PostgreSQL:** Ikke installert (planlegges i Docker)
+- ✅ **Docker Compose:** v2.32.4
+- ✅ **PostgreSQL:** 16 (i Docker container)
 
 ### SSH-tilkobling
 ```bash
@@ -39,6 +71,45 @@ Host gull
 chmod 600 /home/silver/prosjekter/trening/ssh/gull_id_ed25519
 ```
 
+### Deployment Status
+
+**Produksjonsappen kjører på gull (10.0.0.20) med Docker Compose:**
+
+✅ **Alle services er healthy og kjører:**
+- **Database:** PostgreSQL 16 på port 5432
+- **Backend:** FastAPI på port 8000
+- **Frontend:** React + Nginx på port 8080
+
+**Aksess URLs:**
+- Frontend: `http://10.0.0.20:8080/`
+- Backend API: `http://10.0.0.20:8000/`
+- API Dokumentasjon: `http://10.0.0.20:8000/docs`
+
+**Deployment lokasjon på server:**
+```bash
+/home/sivert/treningsassistent/
+```
+
+**Nyttige kommandoer på server:**
+```bash
+# Sjekk status
+ssh gull "cd treningsassistent && docker compose ps"
+
+# Se logger
+ssh gull "cd treningsassistent && docker compose logs -f backend"
+ssh gull "cd treningsassistent && docker compose logs -f frontend"
+
+# Restart services
+ssh gull "cd treningsassistent && docker compose restart backend"
+ssh gull "cd treningsassistent && docker compose restart frontend"
+
+# Rebuild og deploy
+ssh gull "cd treningsassistent && docker compose up -d --build"
+
+# Stopp alt
+ssh gull "cd treningsassistent && docker compose down"
+```
+
 ## Prosjekt: Treningsassistent
 
 En intelligent treningsassistent som tracker muskeltreningog foreslår øvelser basert på:
@@ -48,18 +119,20 @@ En intelligent treningsassistent som tracker muskeltreningog foreslår øvelser 
 - Tilgjengelig utstyr
 
 ### Teknologi Stack
-- **Backend:** FastAPI 0.104.1 ✅ (Python 3.10.12)
-- **Database:** PostgreSQL 14.19 ✅
+- **Backend:** FastAPI 0.104.1 ✅ (Python 3.10.12 dev / 3.12 prod)
+- **Database:** PostgreSQL 14.19 (dev) / 16 (prod) ✅
 - **ORM:** SQLAlchemy 2.0.23 ✅
 - **Migreringer:** Alembic 1.12.1 ✅
 - **Auth:** JWT tokens + bcrypt ✅
 - **Data:** 873 exercises from free-exercise-db ✅
-- **Frontend:** Ikke implementert ennå
+- **Frontend:** React 19 + TypeScript + Vite + TailwindCSS ✅
+- **Charts:** Plotly.js for statistikk-visualisering ✅
+- **Deployment:** Docker Compose (PostgreSQL 16, FastAPI, React/Nginx) ✅
 
 ## Prosjektstruktur
 
 ```
-/home/silver/prosjekter/trening/
+/home/silver/mounts/server/  (sshfs → gull:/home/sivert/treningsassistent)
 ├── backend/
 │   ├── app/
 │   │   ├── api/              ✅ (7 routers: auth, ovelser, historikk, statistikk, utstyr, muskler, admin)
@@ -76,16 +149,34 @@ En intelligent treningsassistent som tracker muskeltreningog foreslår øvelser 
 │   ├── manage.py             ✅ (CLI for admin/invitations)
 │   ├── test_workflow.py      ✅ (Integration test - passed!)
 │   ├── requirements.txt      ✅
+│   ├── Dockerfile            ✅ (Python 3.12-slim with curl for health checks)
 │   ├── .env                  ✅ (configured)
 │   └── README.md             ✅ (complete documentation)
+├── frontend/
+│   ├── src/
+│   │   ├── pages/            ✅ (HomePage, ExercisePage, HistoryPage, StatisticsPage, EquipmentPage, AdminPage)
+│   │   ├── components/       ✅ (layout, common, forms, stats)
+│   │   ├── services/         ✅ (API clients for alle endpoints)
+│   │   ├── contexts/         ✅ (AuthContext for JWT handling)
+│   │   ├── types/            ✅ (TypeScript interfaces)
+│   │   └── App.tsx           ✅ (React Router setup)
+│   ├── Dockerfile            ✅ (Multi-stage: Node 22 build + nginx serve)
+│   ├── nginx.conf            ✅ (Reverse proxy /api/* → backend:8000)
+│   ├── package.json          ✅
+│   ├── tsconfig.json         ✅
+│   ├── vite.config.ts        ✅
+│   └── tailwind.config.js    ✅
 ├── exercise_images/          ✅ (1746 images, 873 exercises)
 ├── exercises.json            ✅ (873 øvelser fra free-exercise-db)
+├── docker-compose.yml        ✅ (PostgreSQL 16, backend, frontend with health checks)
+├── .env.production           ✅ (Production environment template)
+├── DEPLOYMENT.md             ✅ (Complete deployment guide)
 ├── referansedok.md           (komplett prosjektplan)
 ├── data_mapping.md           (JSON → Database mapping)
 └── claude.md                 (dette dokumentet)
 ```
 
-**Status:** Backend er 100% ferdig og fungerende! 🎉
+**Status:** 🎉 Fullstack-applikasjon komplett og deployed i produksjon!
 
 ## WSL-spesifikke hensyn
 
@@ -188,18 +279,131 @@ Alle backend-komponenter er implementert og testet:
 10. ✅ **Tests**
     - Complete workflow test verified all functionality
 
+## Docker Deployment
+
+### Lokal Development med Docker
+
+```bash
+# Start alle services
+docker compose up -d
+
+# Rebuild etter kodeendringer
+docker compose up -d --build
+
+# Se logger
+docker compose logs -f backend
+docker compose logs -f frontend
+
+# Stopp alt
+docker compose down
+
+# Fullstendig cleanup (inkludert volumes)
+docker compose down -v
+```
+
+### Health Checks
+
+Alle Docker containers har konfigurerte health checks:
+
+**Database (PostgreSQL 16):**
+```bash
+docker exec treningsassistent-db pg_isready -U postgres -d treningsassistent
+```
+
+**Backend (FastAPI):**
+```bash
+docker exec treningsassistent-backend curl -f http://localhost:8000/health
+```
+
+**Frontend (Nginx):**
+```bash
+docker exec treningsassistent-frontend curl -f http://localhost/ -o /dev/null -s
+```
+
+**Viktig:**
+- Backend health check krever `curl` (installert i Dockerfile)
+- Frontend health check bruker `curl` (ikke `wget` som har connection issues)
+- Health checks kjører automatisk hver 30. sekund
+
+### Deployment til Produksjon
+
+Se `DEPLOYMENT.md` for fullstendig guide. Kort versjon:
+
+```bash
+# 1. Kopier filer til server
+scp -r . gull:~/treningsassistent/
+
+# 2. Sett opp .env fil
+ssh gull "cd treningsassistent && cp .env.production .env"
+ssh gull "cd treningsassistent && nano .env"  # Edit SECRET_KEY
+
+# 3. Start services
+ssh gull "cd treningsassistent && docker compose up -d"
+
+# 4. Verifiser
+ssh gull "cd treningsassistent && docker compose ps"
+```
+
+## Frontend Development
+
+### Frontend er komplett! ✅
+
+**Implementerte pages:**
+1. ✅ **HomePage** - AI-drevet øvelsesanbefaling og quick stats
+2. ✅ **ExercisePage** - Søk/filtrer/velg øvelser manuelt
+3. ✅ **HistoryPage** - Full treningshistorikk med sletting
+4. ✅ **StatisticsPage** - Volum over tid, muskelfrekvens, personlige rekorder
+5. ✅ **EquipmentPage** - Håndter utstyrsprofiler (Gym/Hjemme/Reise)
+6. ✅ **AdminPage** - Brukerhåndtering og invitasjonskoder (kun admin)
+
+**Nøkkelfeatures:**
+- ✅ JWT authentication med AuthContext
+- ✅ Protected routes (redirect til login hvis ikke autentisert)
+- ✅ Responsive design med TailwindCSS
+- ✅ API error handling med toast notifications
+- ✅ TypeScript for type safety
+- ✅ Chart visualizations med Plotly.js
+- ✅ Exercise images fra /exercise_images/
+- ✅ Real-time updates etter logg/endringer
+
+**Test accounts:**
+- Admin: `admin` / `admin123`
+- User: `testuser` / `password123`
+
+### Kjøre Frontend Lokalt
+
+```bash
+# Install dependencies
+cd frontend
+npm install
+
+# Dev server med hot reload
+npm run dev
+# Åpner på http://localhost:5173
+
+# Production build
+npm run build
+# Output til frontend/dist/
+
+# Preview production build
+npm run preview
+```
+
+**Viktig:** Backend må kjøre på `http://localhost:8000` for at frontend skal fungere.
+
 ## Neste steg (valgfritt)
 
-**Frontend Development:**
-- Web app (React/Vue/Svelte)
-- Mobil app (React Native/Flutter)
+**Testing:**
+- Unit tests for frontend (Vitest)
+- E2E tests (Playwright/Cypress)
+- Backend unit tests med pytest
 
-**Backend Enhancements:**
-- Unit tests med pytest
-- Docker/Docker Compose setup
-- Deployment guide for Ubuntu server
+**Features:**
 - Email sending for invitations
 - Password reset endpoint
+- Mobil app (React Native/Flutter)
+- Export workout data (PDF/CSV)
+- Social features (deling av øvelser)
 
 ## Tips for utvikling i WSL
 
@@ -219,7 +423,9 @@ cp backend/.env.example backend/.env
 
 ## MCP (Model Context Protocol) Integration
 
-Dette prosjektet bruker tre MCP servere for å gi Claude Code direkte tilgang til database, API-endepunkter, og filsystemet.
+Dette prosjektet bruker fire MCP servere for å gi Claude Code direkte tilgang til database, API-endepunkter, filsystem, og Docker på produksjonsserveren (gull).
+
+**VIKTIG:** Alle MCP-servere (unntatt filesystem) er nå koblet til **produksjonsserveren gull** for å jobbe med ekte data.
 
 ### Konfigurert i `.mcp.json` (prosjektrot):
 
@@ -228,20 +434,43 @@ Dette prosjektet bruker tre MCP servere for å gi Claude Code direkte tilgang ti
   "mcpServers": {
     "postgres": {
       "type": "stdio",
-      "command": "uvx",
-      "args": ["mcp-server-postgres", "postgres://postgres:securepassword123@localhost/treningsassistent"]
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "postgres://postgres:Tr3n1ng_Pr0d_P4ssw0rd_2024!@localhost:15432/treningsassistent"]
     },
     "fastapi": {
       "type": "sse",
-      "url": "http://localhost:8000/mcp"
+      "url": "http://46.250.218.99:8000/mcp"
     },
     "filesystem": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/silver/prosjekter/trening"]
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/silver/mounts/server"]
+    },
+    "docker": {
+      "command": "uvx",
+      "args": ["mcp-server-docker"],
+      "env": {
+        "DOCKER_HOST": "ssh://gull"
+      }
     }
   }
 }
+```
+
+**Viktig oppdateringer i MCP-konfigurasjon:**
+- **Postgres MCP:** Bruker `npx` i stedet for `uvx`, kobler via SSH tunnel på `localhost:15432`
+- **FastAPI MCP:** Peker direkte til produksjons-IP `http://46.250.218.99:8000/mcp`
+- **Filesystem MCP:** Peker til `/home/silver/mounts/server` (sshfs-mounted path)
+- **Docker MCP:** Bruker `DOCKER_HOST=ssh://gull` for remote Docker access
+
+**SSH Tunnel for Postgres:**
+Tunnelen startes automatisk i `~/scripts/mount-server.sh`, men kan også kjøres manuelt:
+```bash
+# Sjekk om tunnel kjører
+ss -tulpn | grep 15432
+
+# Start manuelt hvis nødvendig
+ssh -f -N -L 15432:localhost:5432 gull
 ```
 
 ### Aktivert i `.claude/settings.local.json`:
@@ -257,13 +486,40 @@ Dette prosjektet bruker tre MCP servere for å gi Claude Code direkte tilgang ti
 
 ### PostgreSQL MCP Server
 
-**Database Connection Details:**
+**Database Connection Details (Produksjon på gull via SSH tunnel):**
 - **Database:** `treningsassistent`
 - **User:** `postgres`
-- **Password:** `securepassword123`
-- **Host:** `localhost`
-- **Port:** `5432` (standard, ikke spesifisert i connection string)
-- **Connection String:** `postgres://postgres:securepassword123@localhost/treningsassistent`
+- **Password:** `Tr3n1ng_Pr0d_P4ssw0rd_2024!`
+- **Remote Host:** `gull` (10.0.0.20)
+- **Remote Port:** `5432`
+- **Local Tunnel Port:** `15432`
+- **Connection String:** `postgres://postgres:Tr3n1ng_Pr0d_P4ssw0rd_2024!@localhost:15432/treningsassistent`
+
+**SSH Tunnel Setup:**
+PostgreSQL MCP serveren kobler til via en SSH-tunnel siden databasen er på en remote server.
+
+Start SSH-tunnelen:
+```bash
+# Automatisk via script (anbefalt)
+./scripts/start-postgres-tunnel.sh
+
+# Eller manuelt
+ssh -f -N -L 15432:localhost:5432 -i /home/silver/prosjekter/trening/ssh/gull_id_ed25519 sivert@10.0.0.20
+```
+
+Sjekk tunnel status:
+```bash
+# Se om tunnel kjører
+ps aux | grep "ssh.*15432" | grep -v grep
+
+# Test tilkobling
+nc -z localhost 15432
+```
+
+Stopp tunnel:
+```bash
+pkill -f "ssh.*15432:localhost:5432"
+```
 
 **MCP Bruker:**
 - PostgreSQL MCP serveren kjører som `postgres` (superuser)
@@ -281,27 +537,58 @@ Dette prosjektet bruker tre MCP servere for å gi Claude Code direkte tilgang ti
 
 **Tilgjengelige MCP Tools:**
 Når MCP serveren er aktiv kan Claude Code:
-- Kjøre SQL queries direkte mot databasen
+- Kjøre SQL queries direkte mot **produksjonsdatabasen** på gull
 - Liste tabeller og kolonner
 - Inserte, oppdatere, og slette data
 - Hente statistikk og analysere data
+- Jobber med **ekte produksjonsdata** (873 øvelser, alle brukere, treningshistorikk)
 
 ### FastAPI MCP Server
 
 FastAPI MCP serveren gir Claude Code direkte tilgang til alle backend API-endepunkter.
 
-**Server Details:**
+**Server Details (Produksjon på gull):**
 - **Type:** SSE (Server-Sent Events)
-- **URL:** `http://localhost:8000/mcp`
-- **Package:** `fastapi-mcp==0.4.0` (installert i venv)
-- **Oppsett:** 3 linjer i `backend/app/main.py`:
+- **URL:** `http://46.250.218.99:8000/mcp` (direkte til produksjonsserver)
+- **Server:** Produksjonsbackend på gull (10.0.0.20 / 46.250.218.99)
+- **Package:** `fastapi-mcp>=0.4.0` (optional dependency)
+- **Oppsett:** Conditional import i `backend/app/main.py`:
   ```python
-  from fastapi_mcp import FastApiMCP
-  mcp = FastApiMCP(app)
-  mcp.mount()
+  try:
+      from fastapi_mcp import FastApiMCP
+      HAS_MCP = True
+  except ImportError:
+      HAS_MCP = False
+
+  if HAS_MCP:
+      mcp = FastApiMCP(app)
+      mcp.mount()
   ```
 
-**Start Backend Server:**
+**SSH Tunnel Setup:**
+FastAPI MCP serveren kobler til via en SSH-tunnel fra WSL til gull.
+
+Start SSH-tunnelen:
+```bash
+# Manuelt:
+ssh -f -N -L 18000:localhost:8000 gull
+
+# Eller bruk scriptet:
+./scripts/start-fastapi-tunnel.sh
+```
+
+Verifiser at tunnelen kjører:
+```bash
+ps aux | grep "ssh.*18000"
+timeout 2 curl -N -H "Accept: text/event-stream" http://localhost:18000/mcp
+```
+
+Stopp tunnelen:
+```bash
+pkill -f "ssh.*18000:localhost:8000"
+```
+
+**Backend Server Status:**
 ```bash
 cd ~/prosjekter/trening/backend
 source venv/bin/activate
@@ -380,6 +667,45 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 &
 - ✅ Bevarer request/response schemas og endpoint-dokumentasjon
 - ✅ Direkte ASGI-kommunikasjon (ikke HTTP)
 
+### Docker MCP Server
+
+Docker MCP serveren gir Claude Code direkte tilgang til Docker-containere på gull-serveren via SSH.
+
+**Server Details:**
+- **Type:** stdio
+- **Command:** `uvx` (requires uv package manager)
+- **Package:** `mcp-server-docker`
+- **Connection:** SSH til gull (10.0.0.20)
+- **Environment:** `DOCKER_HOST=ssh://gull`
+
+**Installasjon av uv (gjort):**
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+# Installeres til ~/.local/bin/uv og ~/.local/bin/uvx
+```
+
+**Tilgjengelige operasjoner:**
+- **Container Operations:** list, create, run, recreate, start, fetch logs, stop, remove
+- **Image Management:** list, pull, push, build, remove
+- **Network Operations:** list, create, remove
+- **Volume Operations:** list, create, remove
+- **Resources:** Per-container performance stats (CPU, memory) og log streaming
+
+**Eksempel bruk:**
+```
+List all containers on gull
+Show logs for treningsassistent-backend
+Restart the frontend container
+Check CPU and memory usage for all containers
+```
+
+**Fordeler med Docker MCP:**
+- ✅ Administrer Docker-containere på remote server uten bash-kommandoer
+- ✅ Sanntids monitoring av container stats og logger
+- ✅ Natural language for Docker-operasjoner
+- ✅ Trygg tilgang via SSH (bruker eksisterende SSH-konfigurasjon)
+- ✅ Full Docker API tilgang gjennom MCP
+
 ### Filesystem MCP Server
 
 Filesystem MCP serveren gir Claude Code direkte tilgang til filsystemet for fil- og mappeoperasjoner.
@@ -388,7 +714,12 @@ Filesystem MCP serveren gir Claude Code direkte tilgang til filsystemet for fil-
 - **Type:** stdio
 - **Command:** `npx`
 - **Package:** `@modelcontextprotocol/server-filesystem`
-- **Scope:** `/home/silver/prosjekter/trening` (hele prosjektmappen)
+- **Scope:** `/home/silver/mounts/server` (sshfs-mounted produksjonsserver)
+
+**⚠️ VIKTIG:** Filesystem MCP opererer nå på sshfs-mountet path!
+- Alle file-operasjoner skjer DIREKTE på produksjonsserveren
+- Ingen synkronisering eller deploy nødvendig
+- Endringer er instant og live
 
 **Tilgjengelige operasjoner:**
 - `read_text_file` / `read_media_file` - Les filer
@@ -410,16 +741,17 @@ Filesystem MCP serveren gir Claude Code direkte tilgang til filsystemet for fil-
 ## Kontekst for Claude
 
 Når du hjelper med dette prosjektet:
-- Backend er 100% ferdig og fungerende! 🎉
+- Fullstack-applikasjon komplett og deployed i produksjon! 🎉
 - Følg arkitekturen beskrevet i `referansedok.md`
 - Bruk `data_mapping.md` for å mappe exercises.json til database
-- Fokus nå kan være på testing, optimering, eller frontend-utvikling
-- PostgreSQL er satt opp og kjører
+- PostgreSQL er satt opp og kjører (både lokalt og i produksjon)
 - Alle Python-kommandoer kjøres i WSL2 Linux-miljø
-- **Tre MCP servere er konfigurert:**
-  - **PostgreSQL MCP** (`postgres`) - Direkte SQL queries mot databasen
-  - **FastAPI MCP** (`fastapi`) - Direkte tilgang til alle 40+ API-endepunkter via SSE
-  - **Filesystem MCP** (`filesystem`) - Fil- og mappeoperasjoner i prosjektmappen
-- MCP-konfigurasjon finnes i `.mcp.json` og `.claude/settings.local.json`
-- Backend server må kjøre på `http://localhost:8000` for at FastAPI MCP skal fungere
-- Restart Claude Code etter MCP-konfigurasjonsendringer
+- **Fire MCP servere er konfigurert:**
+  - **PostgreSQL MCP** (`postgres`) - Direkte SQL queries mot **produksjonsdatabasen på gull** (873 øvelser, ekte data)
+  - **FastAPI MCP** (`fastapi`) - Direkte tilgang til alle 40+ API-endepunkter via SSE på **produksjonsserveren gull**
+  - **Filesystem MCP** (`filesystem`) - Fil- og mappeoperasjoner i **lokal prosjektmappe** (WSL2)
+  - **Docker MCP** (`docker`) - Docker container management på **gull-serveren via SSH**
+- **Alle MCP-servere (unntatt filesystem) peker på produksjon (gull)**
+- MCP-konfigurasjon finnes i `.mcp.json` (project-level)
+- uv/uvx er installert i `~/.local/bin/` for Python pakke management
+- **VIKTIG:** Restart Claude Code etter MCP-konfigurasjonsendringer

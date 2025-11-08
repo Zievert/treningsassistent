@@ -26,6 +26,25 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
   const primaryMuscles = exercise.muskler.filter(m => m.muskel_type === 'primar');
   const secondaryMuscles = exercise.muskler.filter(m => m.muskel_type === 'sekundar');
 
+  // Format instructions for better readability
+  const formatInstructions = (instructions: string | null): string => {
+    if (!instructions) return '';
+
+    try {
+      // Parse JSON array
+      const steps = JSON.parse(instructions) as string[];
+
+      // Join all steps and add line breaks after periods
+      const allText = steps.join(' ');
+
+      // Add line break after each sentence (. followed by space and capital letter)
+      return allText.replace(/\.\s+/g, '.\n\n');
+    } catch {
+      // If parsing fails, return as-is
+      return instructions;
+    }
+  };
+
   return (
     <Card className="overflow-hidden">
       <div className="md:flex">
@@ -180,8 +199,8 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
                 </svg>
               </button>
               {showInstructions && (
-                <div className="mt-2 text-sm text-gray-600 whitespace-pre-line">
-                  {exercise.instruksjoner}
+                <div className="mt-2 text-sm text-gray-600 whitespace-pre-line leading-relaxed">
+                  {formatInstructions(exercise.instruksjoner)}
                 </div>
               )}
             </div>

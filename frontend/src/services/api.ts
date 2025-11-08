@@ -2,8 +2,8 @@ import axios, { AxiosError } from 'axios';
 import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { storage } from '../utils/storage';
 
-// Base URL - adjust based on environment
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// Base URL - empty string uses same origin (proxied by nginx in production)
+const BASE_URL = import.meta.env.VITE_API_URL || '';
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({

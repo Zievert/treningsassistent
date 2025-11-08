@@ -1,6 +1,6 @@
 # FastAPI og ASGI server
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
 gunicorn==21.2.0
 
 # Database
@@ -11,7 +11,7 @@ alembic==1.12.1
 # Autentisering og sikkerhet
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
-python-multipart==0.0.6
+python-multipart>=0.0.9
 bcrypt==4.1.1
 
 # Validering
@@ -21,3 +21,6 @@ email-validator==2.1.0
 
 # Utilities
 python-dotenv==1.0.0
+
+# MCP Integration (optional, for Claude Code)
+fastapi-mcp>=0.4.0
