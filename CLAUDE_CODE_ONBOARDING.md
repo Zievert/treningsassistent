@@ -7,7 +7,9 @@ Dette er **Treningsassistent** - en intelligent treningsapp med AI-drevet øvels
 ### Teknologi Stack
 - **Backend:** FastAPI (Python) med PostgreSQL database
 - **Frontend:** React med TypeScript, Vite, Tailwind CSS
-- **Deployment:** Docker Compose på remote server (gull / 46.250.218.99)
+- **Deployment:** Docker Compose på remote server (gull)
+  - Public frontend: http://46.250.218.99:8080
+  - Backend/DB tilgjengelig via SSH-tunneler
 - **AI-algoritme:** Øvelsesanbefaling basert på muskelprioritet, antagonistisk balanse og rotasjon
 
 ---
@@ -93,14 +95,29 @@ Filen `.mcp.json` i rotmappen konfigurerer 4 MCP-servere:
 ```json
 {
   "type": "sse",
-  "url": "http://46.250.218.99:8000/mcp"
+  "url": "http://localhost:8000/mcp"
 }
 ```
-- Direkte HTTP-tilgang til FastAPI backend
+- HTTP-tilgang til FastAPI backend via SSH tunnel
+- Krever SSH tunnel: `ssh -f -N -L 8000:localhost:8000 gull`
 - Kan teste API-endpoints, hente OpenAPI schema, etc.
 - **Viktig:** Dette er produksjons-API-et!
 
 ### Troubleshooting MCP
+
+**VIKTIG - SSH Tunneler må være aktive:**
+Både Postgres og FastAPI MCP krever SSH-tunneler. Opprett dem med:
+```bash
+# Postgres tunnel (port 15432)
+ssh -f -N -L 15432:localhost:5432 gull
+
+# FastAPI tunnel (port 8000)
+ssh -f -N -L 8000:localhost:8000 gull
+
+# Verifiser at tunnelene kjører
+ps aux | grep "ssh -f -N"
+ss -tuln | grep -E "15432|8000"
+```
 
 **Hvis MCP-servere ikke vises:**
 1. Restart Claude Code
@@ -109,19 +126,39 @@ Filen `.mcp.json` i rotmappen konfigurerer 4 MCP-servere:
    ```bash
    npx -y @modelcontextprotocol/server-postgres --version
    npx -y @modelcontextprotocol/server-filesystem --version
-   uvx mcp-server-docker --version
+
+   # uvx må være installert for Docker MCP
+   which uvx || curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
 
 **Hvis Postgres MCP feiler:**
 ```bash
 # Sjekk at SSH tunnel kjører
-ss -tulpn | grep 15432
+ss -tuln | grep 15432
+
+# Opprett tunnel hvis den ikke kjører
+ssh -f -N -L 15432:localhost:5432 gull
 ```
 
 **Hvis Docker MCP feiler:**
 ```bash
 # Test SSH-tilkobling
 ssh gull "docker ps"
+
+# Sjekk at uvx er installert
+which uvx || curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+**Hvis FastAPI MCP feiler:**
+```bash
+# Sjekk at SSH tunnel kjører
+ss -tuln | grep 8000
+
+# Opprett tunnel hvis den ikke kjører
+ssh -f -N -L 8000:localhost:8000 gull
+
+# Test at backend svarer
+curl -s localhost:8000/health
 ```
 
 ---
@@ -170,12 +207,12 @@ services:
     Port: 5432  # Tilgjengelig via SSH tunnel på localhost:15432
 
   backend:      # FastAPI
-    Port: 8000  # http://46.250.218.99:8000
-    Health: curl http://localhost:8000/health
+    Port: 8000  # Tilgjengelig via SSH tunnel på localhost:8000
+    Health: ssh gull "curl -s localhost:8000/health"
 
   frontend:     # Nginx med React build
-    Port: 8080  # http://46.250.218.99:8080
-    Health: curl http://localhost:80
+    Port: 8080  # Public: http://46.250.218.99:8080
+    Health: ssh gull "curl -s localhost:80"
 ```
 
 ### Sjekke Service Status

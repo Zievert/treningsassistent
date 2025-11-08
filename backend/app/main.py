@@ -58,7 +58,7 @@ app.add_middleware(
 # Create and mount MCP server for Claude Code integration (optional, dev only)
 if HAS_MCP:
     mcp = FastApiMCP(app)
-    mcp.mount()
+    mcp.mount_sse(mount_path="/mcp")  # Explicitly use SSE transport with /mcp path
 
 
 # ============================================================================

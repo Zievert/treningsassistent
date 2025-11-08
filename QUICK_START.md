@@ -12,12 +12,25 @@ Hei Claude! Velkommen til Treningsassistent-prosjektet. Her er det viktigste du 
 ### 🔧 MCP Servere
 Du har tilgang til 4 MCP-servere (konfigurert i `.mcp.json`):
 
-1. **Postgres MCP** - Produksjons-database (port 15432 via SSH tunnel)
-2. **Docker MCP** - Docker containers på produksjonsserver
+1. **Postgres MCP** - Produksjons-database (localhost:15432 via SSH tunnel)
+2. **Docker MCP** - Docker containers på produksjonsserver (via SSH til gull)
 3. **Filesystem MCP** - Filer på serveren (via sshfs mount)
-4. **FastAPI MCP** - Produksjons-API (http://46.250.218.99:8000/mcp)
+4. **FastAPI MCP** - Produksjons-API (localhost:8000 via SSH tunnel)
 
-**Hvis MCP-servere ikke fungerer:** Restart Claude Code så lastes `.mcp.json` på nytt.
+**VIKTIG - SSH Tunneler må kjøre:**
+Før Claude Code starter må disse SSH-tunnelene være aktive:
+```bash
+# Postgres tunnel
+ssh -f -N -L 15432:localhost:5432 gull
+
+# FastAPI tunnel
+ssh -f -N -L 8000:localhost:8000 gull
+```
+
+**Hvis MCP-servere ikke fungerer:**
+1. Sjekk at SSH-tunnelene kjører: `ps aux | grep "ssh -f -N"`
+2. Restart Claude Code så lastes `.mcp.json` på nytt
+3. Docker MCP krever at `uv` er installert: `curl -LsSf https://astral.sh/uv/install.sh | sh`
 
 ### 📚 Komplett dokumentasjon
 Les `CLAUDE_CODE_ONBOARDING.md` i rotmappen for:
