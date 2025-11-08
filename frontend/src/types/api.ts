@@ -86,13 +86,14 @@ export interface MusclePriority extends Muscle {
 }
 
 export interface AntagonisticPair {
-  muskel_1: string;
-  muskel_2: string;
-  muskel_1_volum: number;
-  muskel_2_volum: number;
-  ratio: number;
-  onsket_ratio: number;
-  status: 'ok' | 'ubalansert';
+  muskel_1_navn: string;
+  muskel_2_navn: string;
+  muskel_1_volum: string;
+  muskel_2_volum: string;
+  faktisk_ratio: string;
+  onsket_ratio: string;
+  balanse_status: string;
+  avvik_prosent: number;
 }
 
 // Equipment Types
@@ -140,11 +141,9 @@ export interface MuscleHeatmapData {
 }
 
 export interface VolumeOverTime {
-  periode: string;
-  total_volum: number;
-  per_kategori: {
-    [key: string]: number;
-  };
+  dato: string;
+  total_volum: string;
+  antall_ovelser: number;
 }
 
 export interface MuscleStatistics {

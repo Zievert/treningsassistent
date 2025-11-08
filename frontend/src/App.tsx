@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/layout';
-import { LoginPage, RegisterPage, HomePage, HistoryPage } from './pages';
+import { LoginPage, RegisterPage, HomePage, HistoryPage, StatisticsPage } from './pages';
 
 function App() {
   return (
@@ -26,6 +26,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <HistoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/statistikk"
+            element={
+              <ProtectedRoute>
+                <StatisticsPage />
               </ProtectedRoute>
             }
           />

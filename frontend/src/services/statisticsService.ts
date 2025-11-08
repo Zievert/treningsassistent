@@ -22,12 +22,9 @@ export const statisticsService = {
     return response.data;
   },
 
-  async getVolumeOverTime(params?: {
-    siste_dager?: number;
-    gruppe_per?: 'dag' | 'uke' | 'maned';
-  }): Promise<VolumeOverTime[]> {
+  async getVolumeOverTime(dager: number = 30): Promise<VolumeOverTime[]> {
     const response = await apiClient.get<VolumeOverTime[]>('/api/statistikk/volum-over-tid', {
-      params,
+      params: { dager },
     });
     return response.data;
   },
