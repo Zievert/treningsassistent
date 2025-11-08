@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { MainLayout } from '../components/layout';
 import { ExerciseCard } from '../components/features/ExerciseCard';
 import { ExerciseLoggingForm } from '../components/features/ExerciseLoggingForm';
 import { Card, Alert } from '../components/common';
-import { exerciseService, historyService } from '../services';
-import type { ExerciseRecommendation, ExerciseLog } from '../types';
+import { exerciseService, historyService, equipmentService } from '../services';
+import type { ExerciseRecommendation, ExerciseLog, EquipmentProfile } from '../types';
 
 export const HomePage: React.FC = () => {
   const [recommendation, setRecommendation] = useState<ExerciseRecommendation | null>(null);
   const [recentHistory, setRecentHistory] = useState<ExerciseLog[]>([]);
+  const [activeProfile, setActiveProfile] = useState<EquipmentProfile | null>(null);
   const [isLoadingRecommendation, setIsLoadingRecommendation] = useState(true);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,9 +40,19 @@ export const HomePage: React.FC = () => {
     }
   };
 
+  const fetchActiveProfile = async () => {
+    try {
+      const profile = await equipmentService.getActiveProfile();
+      setActiveProfile(profile);
+    } catch (err: any) {
+      console.error('Kunne ikke hente aktiv profil:', err);
+    }
+  };
+
   useEffect(() => {
     fetchRecommendation();
     fetchRecentHistory();
+    fetchActiveProfile();
   }, []);
 
   const handleExerciseLogged = () => {
@@ -77,6 +89,42 @@ export const HomePage: React.FC = () => {
             AI-drevet anbefaling basert på muskelprioritet og balanse
           </p>
         </div>
+
+        {/* Active equipment profile */}
+        {activeProfile && (
+          <Card>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <svg
+                  className="h-10 w-10 text-primary-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  />
+                </svg>
+                <div>
+                  <p className="text-sm text-gray-600">Aktiv utstyrsprofil:</p>
+                  <p className="font-semibold text-gray-900">{activeProfile.profil_navn}</p>
+                  <p className="text-xs text-gray-500">
+                    {activeProfile.utstyr.length} utstyr tilgjengelig
+                  </p>
+                </div>
+              </div>
+              <Link
+                to="/utstyr"
+                className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+              >
+                Endre →
+              </Link>
+            </div>
+          </Card>
+        )}
 
         {/* Error */}
         {error && (
