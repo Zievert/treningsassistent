@@ -6,7 +6,12 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
-from fastapi_mcp import FastApiMCP
+
+try:
+    from fastapi_mcp import FastApiMCP
+    HAS_MCP = True
+except ImportError:
+    HAS_MCP = False
 
 from app.database import SessionLocal, engine
 
@@ -50,9 +55,10 @@ app.add_middleware(
 # MCP SERVER SETUP
 # ============================================================================
 
-# Create and mount MCP server for Claude Code integration
-mcp = FastApiMCP(app)
-mcp.mount()
+# Create and mount MCP server for Claude Code integration (optional, dev only)
+if HAS_MCP:
+    mcp = FastApiMCP(app)
+    mcp.mount()
 
 
 # ============================================================================
