@@ -6,7 +6,7 @@ import { LoginPage, RegisterPage, HomePage, HistoryPage, StatisticsPage, Equipme
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/trening">
       <ToastProvider>
         <AuthProvider>
           <Routes>

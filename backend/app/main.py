@@ -43,7 +43,8 @@ app.add_middleware(
         "http://localhost:3000",  # React dev server
         "http://localhost:5173",  # Vite dev server
         "http://localhost:8080",  # Alternative frontend port
-        # Add production frontend URL here when deploying
+        "https://silverha.hopto.org",  # Production domain
+        "http://silverha.hopto.org",  # Production domain (HTTP)
     ],
     allow_credentials=True,
     allow_methods=["*"],
