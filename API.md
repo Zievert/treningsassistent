@@ -582,4 +582,9 @@ The backend exposes an MCP (Model Context Protocol) endpoint at `/mcp` for direc
 
 **MCP URL:** `http://localhost:8000/mcp`
 
+**Note:** Access requires SSH tunnel to production server:
+```bash
+ssh -f -N -L 8000:localhost:8000 gull
+```
+
 See `.mcp.json` in the project root for MCP configuration.

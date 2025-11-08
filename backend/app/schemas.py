@@ -188,6 +188,7 @@ class OvelseUtfortResponse(BaseModel):
     repetisjoner: int
     vekt: Decimal
     tidspunkt: datetime
+    involverte_muskler: List[str] = Field(default_factory=list, description="List of involved muscle names")
 
     class Config:
         from_attributes = True

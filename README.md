@@ -343,16 +343,22 @@ Prosjektet bruker Model Context Protocol (MCP) for direkte tilgang til database 
 
 ### PostgreSQL MCP
 - Direct SQL queries against database
-- Connection: `postgres://postgres:securepassword123@localhost/treningsassistent`
+- Connection: `postgres://postgres:Tr3n1ng_Pr0d_P4ssw0rd_2024!@localhost:15432/treningsassistent`
+- Requires SSH tunnel: `ssh -f -N -L 15432:localhost:5432 gull`
 
 ### FastAPI MCP
 - Direct access to all 40+ API endpoints via SSE
 - URL: `http://localhost:8000/mcp`
+- Requires SSH tunnel: `ssh -f -N -L 8000:localhost:8000 gull`
+
+### Docker MCP
+- Docker container management on production server
+- Via SSH: `DOCKER_HOST=ssh://gull`
 
 ### Filesystem MCP
 - File and directory operations in project folder
 
-Se `.mcp.json` for konfigurasjon.
+Se `.mcp.json` for konfigurasjon. Run `./setup-ssh-tunnels.sh` to set up required SSH tunnels.
 
 ## Utviklingsstatus
 

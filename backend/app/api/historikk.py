@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
 
 from app.database import get_db
-from app.models import Bruker, OvelseUtfort, Ovelse
+from app.models import Bruker, OvelseUtfort, Ovelse, OvelseMuskel, Muskel
 from app.schemas import HistorikkResponse, OvelseUtfortResponse, TreningsoktResponse
 from app.utils.security import get_current_user
 
@@ -59,6 +59,16 @@ async def get_historikk(
         if date_str not in grouped:
             grouped[date_str] = []
 
+        # Get muscles for this exercise
+        muskler = db.query(Muskel.muskel_navn).join(
+            OvelseMuskel,
+            Muskel.muskel_id == OvelseMuskel.muskel_id
+        ).filter(
+            OvelseMuskel.ovelse_id == utfort.ovelse_id
+        ).all()
+
+        involverte_muskler = [muskel.muskel_navn for muskel in muskler]
+
         grouped[date_str].append({
             "utfort_id": utfort.utfort_id,
             "bruker_id": utfort.bruker_id,
@@ -67,7 +77,8 @@ async def get_historikk(
             "sett": utfort.sett,
             "repetisjoner": utfort.repetisjoner,
             "vekt": utfort.vekt,
-            "tidspunkt": utfort.tidspunkt
+            "tidspunkt": utfort.tidspunkt,
+            "involverte_muskler": involverte_muskler
         })
 
     # Build response

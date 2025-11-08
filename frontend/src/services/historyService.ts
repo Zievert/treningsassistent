@@ -6,8 +6,11 @@ export const historyService = {
     siste_dager?: number;
     limit?: number;
   }): Promise<ExerciseLog[]> {
-    const response = await apiClient.get<ExerciseLog[]>('/api/historikk/', { params });
-    return response.data;
+    // Backend returns grouped data (WorkoutSession[]), so we need to flatten it
+    const response = await apiClient.get<WorkoutSession[]>('/api/historikk/', { params });
+    // Flatten the grouped data into a single array of exercises
+    const flattenedExercises = response.data.flatMap(session => session.ovelser);
+    return flattenedExercises;
   },
 
   async getGroupedHistory(params?: {

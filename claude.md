@@ -439,7 +439,7 @@ Dette prosjektet bruker fire MCP servere for å gi Claude Code direkte tilgang t
     },
     "fastapi": {
       "type": "sse",
-      "url": "http://46.250.218.99:8000/mcp"
+      "url": "http://localhost:8000/mcp"
     },
     "filesystem": {
       "type": "stdio",
@@ -459,7 +459,7 @@ Dette prosjektet bruker fire MCP servere for å gi Claude Code direkte tilgang t
 
 **Viktig oppdateringer i MCP-konfigurasjon:**
 - **Postgres MCP:** Bruker `npx` i stedet for `uvx`, kobler via SSH tunnel på `localhost:15432`
-- **FastAPI MCP:** Peker direkte til produksjons-IP `http://46.250.218.99:8000/mcp`
+- **FastAPI MCP:** Bruker SSH tunnel på `localhost:8000` for tilkobling til produksjonsserveren
 - **Filesystem MCP:** Peker til `/home/silver/mounts/server` (sshfs-mounted path)
 - **Docker MCP:** Bruker `DOCKER_HOST=ssh://gull` for remote Docker access
 
@@ -549,7 +549,7 @@ FastAPI MCP serveren gir Claude Code direkte tilgang til alle backend API-endepu
 
 **Server Details (Produksjon på gull):**
 - **Type:** SSE (Server-Sent Events)
-- **URL:** `http://46.250.218.99:8000/mcp` (direkte til produksjonsserver)
+- **URL:** `http://localhost:8000/mcp` (via SSH tunnel til produksjonsserver)
 - **Server:** Produksjonsbackend på gull (10.0.0.20 / 46.250.218.99)
 - **Package:** `fastapi-mcp>=0.4.0` (optional dependency)
 - **Oppsett:** Conditional import i `backend/app/main.py`:
@@ -571,21 +571,22 @@ FastAPI MCP serveren kobler til via en SSH-tunnel fra WSL til gull.
 Start SSH-tunnelen:
 ```bash
 # Manuelt:
-ssh -f -N -L 18000:localhost:8000 gull
+ssh -f -N -L 8000:localhost:8000 gull
 
-# Eller bruk scriptet:
-./scripts/start-fastapi-tunnel.sh
+# Eller bruk scriptet (starter både Postgres og FastAPI tunneler):
+./setup-ssh-tunnels.sh
 ```
 
 Verifiser at tunnelen kjører:
 ```bash
-ps aux | grep "ssh.*18000"
-timeout 2 curl -N -H "Accept: text/event-stream" http://localhost:18000/mcp
+ps aux | grep "ssh.*8000"
+ss -tuln | grep 8000
+timeout 3 curl -s http://localhost:8000/health
 ```
 
 Stopp tunnelen:
 ```bash
-pkill -f "ssh.*18000:localhost:8000"
+pkill -f "ssh.*8000:localhost:8000"
 ```
 
 **Backend Server Status:**
