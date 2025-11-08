@@ -3,14 +3,9 @@ import type { LoginRequest, RegisterRequest, AuthResponse, User } from '../types
 
 export const authService = {
   async login(credentials: LoginRequest): Promise<AuthResponse> {
-    const formData = new FormData();
-    formData.append('username', credentials.brukernavn);
-    formData.append('password', credentials.passord);
-
-    const response = await apiClient.post<AuthResponse>('/api/auth/login', formData, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+    const response = await apiClient.post<AuthResponse>('/api/auth/login', {
+      brukernavn: credentials.brukernavn,
+      passord: credentials.passord,
     });
     return response.data;
   },
