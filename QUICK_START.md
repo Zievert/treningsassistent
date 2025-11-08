@@ -42,6 +42,13 @@ Les `CLAUDE_CODE_ONBOARDING.md` i rotmappen for:
 - Deploy-prosedyrer
 - Hurtigkommandoer
 
+Les `SECURITY.md` for sikkerhetskonfigurasjon:
+- UFW firewall regler
+- SSL/TLS sertifikater
+- Nginx reverse proxy
+- Port forwarding
+- Sikkerhetssjekkliste
+
 ### 🚀 Teknologi Stack
 - **Backend:** FastAPI + PostgreSQL (Docker containers)
 - **Frontend:** React + TypeScript + Tailwind (Docker + Nginx)
