@@ -20,18 +20,11 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
   const [showInstructions, setShowInstructions] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  // Try to construct image URL from exercise name
-  // Images are in exercise_images/exercises/Exercise_Name/0.jpg
-  const getImageUrl = () => {
-    if (exercise.gif_url) return exercise.gif_url;
+  const imageUrl = exercise.bilde_1_url;
 
-    // Construct path based on exercise name
-    // const exerciseName = exercise.ovelse_navn.replace(/\s+/g, '_');
-    // For now, use a placeholder since we need to serve images from backend
-    return null;
-  };
-
-  const imageUrl = getImageUrl();
+  // Separate primary and secondary muscles
+  const primaryMuscles = exercise.muskler.filter(m => m.muskel_type === 'primar');
+  const secondaryMuscles = exercise.muskler.filter(m => m.muskel_type === 'sekundar');
 
   return (
     <Card className="overflow-hidden">
@@ -108,13 +101,13 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
               Muskler
             </h3>
             <div className="space-y-1">
-              {exercise.primare_muskler && exercise.primare_muskler.length > 0 && (
+              {primaryMuscles.length > 0 && (
                 <div>
                   <span className="text-xs font-medium text-gray-500">Primær:</span>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {exercise.primare_muskler.map((muskel, idx) => (
+                    {primaryMuscles.map((muskel) => (
                       <span
-                        key={idx}
+                        key={muskel.muskel_id}
                         className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full"
                       >
                         {muskel.muskel_navn}
@@ -123,13 +116,13 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
                   </div>
                 </div>
               )}
-              {exercise.sekundare_muskler && exercise.sekundare_muskler.length > 0 && (
+              {secondaryMuscles.length > 0 && (
                 <div className="mt-2">
                   <span className="text-xs font-medium text-gray-500">Sekundær:</span>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {exercise.sekundare_muskler.map((muskel, idx) => (
+                    {secondaryMuscles.map((muskel) => (
                       <span
-                        key={idx}
+                        key={muskel.muskel_id}
                         className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
                       >
                         {muskel.muskel_navn}
@@ -142,15 +135,15 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
           </div>
 
           {/* Equipment */}
-          {exercise.utstyr_krav && exercise.utstyr_krav.length > 0 && (
+          {exercise.utstyr && exercise.utstyr.length > 0 && (
             <div className="mb-4">
               <h3 className="text-sm font-semibold text-gray-700 mb-2">
                 Utstyr
               </h3>
               <div className="flex flex-wrap gap-1">
-                {exercise.utstyr_krav.map((utstyr, idx) => (
+                {exercise.utstyr.map((utstyr) => (
                   <span
-                    key={idx}
+                    key={utstyr.utstyr_id}
                     className="px-2 py-1 bg-gray-200 text-gray-800 text-xs rounded-full"
                   >
                     {utstyr.utstyr_navn}
@@ -191,20 +184,6 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
                   {exercise.instruksjoner}
                 </div>
               )}
-            </div>
-          )}
-
-          {/* Tips */}
-          {showDetails && exercise.tips && exercise.tips.length > 0 && (
-            <div className="mt-4 border-t pt-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">
-                💡 Tips
-              </h3>
-              <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                {exercise.tips.map((tip, idx) => (
-                  <li key={idx}>{tip}</li>
-                ))}
-              </ul>
             </div>
           )}
         </div>

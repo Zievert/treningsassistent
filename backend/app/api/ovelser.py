@@ -119,6 +119,84 @@ async def get_alle_ovelser(
     return result
 
 
+@router.get("/tilgjengelige", response_model=List[OvelseListItem])
+async def get_tilgjengelige_ovelser(
+    current_user: Bruker = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    muskel: Optional[str] = Query(None, description="Filter by muscle name"),
+    level: Optional[str] = Query(None, description="Filter by difficulty level"),
+    force: Optional[str] = Query(None, description="Filter by force type (push/pull/static)"),
+    limit: int = Query(100, le=500, description="Maximum number of results")
+):
+    """
+    Get exercises filtered by user's active equipment profile.
+
+    Automatically filters exercises based on the user's active equipment profile.
+    Only returns exercises that can be performed with the available equipment.
+
+    Additional filters:
+    - muskel: Filter by muscle name (e.g., 'chest', 'quadriceps')
+    - level: Filter by difficulty (beginner, intermediate, expert)
+    - force: Filter by force type (push, pull, static)
+    - limit: Maximum results (default 100, max 500)
+    """
+    from app.models import BrukerUtstyrProfil
+
+    # Get user's active equipment profile
+    utstyr_profil = db.query(BrukerUtstyrProfil).filter(
+        and_(
+            BrukerUtstyrProfil.bruker_id == current_user.bruker_id,
+            BrukerUtstyrProfil.aktiv == True
+        )
+    ).first()
+
+    # Start building query
+    query = db.query(Ovelse)
+
+    # Filter by equipment if user has active profile
+    if utstyr_profil and utstyr_profil.utstyr_ids:
+        query = query.join(
+            OvelseUtstyr,
+            Ovelse.ovelse_id == OvelseUtstyr.ovelse_id
+        ).filter(
+            OvelseUtstyr.utstyr_id.in_(utstyr_profil.utstyr_ids)
+        )
+
+    # Filter by muscle if specified
+    if muskel:
+        query = query.join(
+            OvelseMuskel,
+            Ovelse.ovelse_id == OvelseMuskel.ovelse_id
+        ).join(
+            Muskel,
+            OvelseMuskel.muskel_id == Muskel.muskel_id
+        ).filter(
+            Muskel.muskel_navn == muskel
+        )
+
+    # Filter by level
+    if level:
+        query = query.filter(Ovelse.level == level)
+
+    # Filter by force
+    if force:
+        query = query.filter(Ovelse.force == force)
+
+    # Deduplicate exercises (same exercise might match multiple equipment)
+    query = query.distinct()
+
+    # Limit results
+    ovelser = query.limit(limit).all()
+
+    # Build list items
+    result = []
+    for ovelse in ovelser:
+        item = build_ovelse_list_item(db, ovelse)
+        result.append(item)
+
+    return result
+
+
 # ============================================================================
 # GET SPECIFIC EXERCISE
 # ============================================================================

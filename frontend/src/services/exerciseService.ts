@@ -2,6 +2,7 @@ import apiClient from './api';
 import type {
   ExerciseRecommendation,
   Exercise,
+  ExerciseListItem,
   LogExerciseRequest,
   LogExerciseResponse,
 } from '../types/api';
@@ -20,6 +21,16 @@ export const exerciseService = {
     offset?: number;
   }): Promise<Exercise[]> {
     const response = await apiClient.get<Exercise[]>('/api/ovelser/alle', { params });
+    return response.data;
+  },
+
+  async getAvailableExercises(params?: {
+    muskel?: string;
+    level?: string;
+    force?: string;
+    limit?: number;
+  }): Promise<ExerciseListItem[]> {
+    const response = await apiClient.get<ExerciseListItem[]>('/api/ovelser/tilgjengelige', { params });
     return response.data;
   },
 

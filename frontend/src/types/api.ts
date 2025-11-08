@@ -38,17 +38,40 @@ export interface User {
 }
 
 // Exercise Types
+export interface ExerciseMuscle {
+  muskel_id: number;
+  muskel_navn: string;
+  muskel_type: 'primar' | 'sekundar';
+}
+
 export interface Exercise {
   ovelse_id: number;
   ovelse_navn: string;
-  gif_url?: string;
-  video_url?: string;
-  instruksjoner?: string;
-  tips?: string[];
-  vanlige_feil?: string[];
-  primare_muskler: Muscle[];
-  sekundare_muskler: Muscle[];
-  utstyr_krav: Equipment[];
+  force: string | null;
+  level: string | null;
+  mechanic: string | null;
+  category: string | null;
+  bilde_1_url: string | null;
+  bilde_2_url: string | null;
+  kilde_id: string | null;
+  instruksjoner: string | null;
+  muskler: ExerciseMuscle[];
+  utstyr: Equipment[];
+}
+
+export interface ExerciseListItem {
+  ovelse_id: number;
+  ovelse_navn: string;
+  force: string | null;
+  level: string | null;
+  mechanic: string | null;
+  category: string | null;
+  bilde_1_url: string | null;
+  bilde_2_url: string | null;
+  kilde_id: string | null;
+  primary_muscles: string[];
+  secondary_muscles: string[];
+  equipment: string | null;
 }
 
 export interface ExerciseRecommendation {
