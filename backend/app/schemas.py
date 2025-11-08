@@ -178,6 +178,12 @@ class OvelseLogg(BaseModel):
         return v
 
 
+class MuskelInfo(BaseModel):
+    """Schema for muscle information with type"""
+    muskel_navn: str
+    muskel_type: str  # 'primar' or 'sekundar'
+
+
 class OvelseUtfortResponse(BaseModel):
     """Schema for completed exercise response"""
     utfort_id: int
@@ -188,7 +194,7 @@ class OvelseUtfortResponse(BaseModel):
     repetisjoner: int
     vekt: Decimal
     tidspunkt: datetime
-    involverte_muskler: List[str] = Field(default_factory=list, description="List of involved muscle names")
+    involverte_muskler: List[MuskelInfo] = Field(default_factory=list, description="List of involved muscles with their type (primary/secondary)")
 
     class Config:
         from_attributes = True

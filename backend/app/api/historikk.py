@@ -59,15 +59,18 @@ async def get_historikk(
         if date_str not in grouped:
             grouped[date_str] = []
 
-        # Get muscles for this exercise
-        muskler = db.query(Muskel.muskel_navn).join(
+        # Get muscles for this exercise with their type (primar/sekundar)
+        muskler = db.query(Muskel.muskel_navn, OvelseMuskel.muskel_type).join(
             OvelseMuskel,
             Muskel.muskel_id == OvelseMuskel.muskel_id
         ).filter(
             OvelseMuskel.ovelse_id == utfort.ovelse_id
         ).all()
 
-        involverte_muskler = [muskel.muskel_navn for muskel in muskler]
+        involverte_muskler = [
+            {"muskel_navn": muskel.muskel_navn, "muskel_type": muskel.muskel_type}
+            for muskel in muskler
+        ]
 
         grouped[date_str].append({
             "utfort_id": utfort.utfort_id,

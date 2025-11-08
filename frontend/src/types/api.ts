@@ -140,6 +140,11 @@ export interface CreateEquipmentProfileRequest {
 }
 
 // History Types
+export interface MuskelInfo {
+  muskel_navn: string;
+  muskel_type: 'primar' | 'sekundar';
+}
+
 export interface ExerciseLog {
   utfort_id: number;
   ovelse_navn: string;
@@ -147,7 +152,7 @@ export interface ExerciseLog {
   repetisjoner: number;
   vekt: number;
   tidspunkt: string;
-  involverte_muskler: string[];
+  involverte_muskler: MuskelInfo[];
 }
 
 export interface WorkoutSession {
