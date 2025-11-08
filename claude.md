@@ -7,6 +7,38 @@
 - **Distribusjon:** Ubuntu (antagelig)
 - **Working Directory:** `/home/silver/prosjekter/trening`
 
+## Produksjonsserver
+
+**Server:** gull (Ubuntu Server)
+- **IP-adresse:** `10.0.0.20`
+- **Brukernavn:** `sivert`
+- **SSH-nøkkel:** `/home/silver/prosjekter/trening/ssh/gull_id_ed25519`
+- **OS:** Ubuntu 24.04 LTS (Linux 6.8.0-86-generic)
+- **Arkitektur:** x86_64
+
+### Installert programvare
+- ✅ **Python:** 3.12.3
+- ✅ **Node.js:** v22.21.0
+- ✅ **Docker:** 28.5.1
+- ❌ **PostgreSQL:** Ikke installert (planlegges i Docker)
+
+### SSH-tilkobling
+```bash
+# Fra WSL2
+ssh -i /home/silver/prosjekter/trening/ssh/gull_id_ed25519 sivert@10.0.0.20
+
+# Forenklet med alias (legg til i ~/.ssh/config):
+Host gull
+    HostName 10.0.0.20
+    User sivert
+    IdentityFile /home/silver/prosjekter/trening/ssh/gull_id_ed25519
+```
+
+**Viktig:** SSH-nøkkelen må ha korrekte tillatelser (600):
+```bash
+chmod 600 /home/silver/prosjekter/trening/ssh/gull_id_ed25519
+```
+
 ## Prosjekt: Treningsassistent
 
 En intelligent treningsassistent som tracker muskeltreningog foreslår øvelser basert på:
